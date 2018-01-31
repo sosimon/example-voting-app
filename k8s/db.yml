@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: db
+    labels:
+        app: db
+        tier: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: db
+    template:
+        metadata:
+            labels:
+                app: db
+        spec:
+            volumes:
+            - name: db-data
+              persistentVolumeClaim:
+                  claimName: db-data-claim
+            containers:
+            - name: db
+              image: postgres:9.4
+              volumeMounts:
+              - mountPath: /var/lib/postgresql/data
+                name: db-data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: db-data
+spec:
+    capacity:
+        storage: 20Gi
+    volumeMode: Filesystem
+    accessModes:
+        - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: db-data-claim
+spec:
+    accessModes:
+        - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+        requests:
+            storage: 20Gi
+
